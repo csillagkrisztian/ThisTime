@@ -13,7 +13,12 @@ import {
 
 export default function AgendaRoute() {
   const testData = {
-    "2022-12-25": [{ name: "Radagon has come", id: 1576996323453 }],
+    "2022-12-25": [
+      {
+        id: 1576996323453,
+        name: "Radagon has come",
+      },
+    ],
   };
   const todayString = new Date().toJSON().slice(0, 10);
   const [items, setItems] = useState(testData);
@@ -40,18 +45,30 @@ export default function AgendaRoute() {
   const addItem = () => {
     setItems((state) => ({
       ...state,
-      [currentDate]: [...state[currentDate], { height: 4, name: "New Item" }],
+      [currentDate]: [
+        ...state[currentDate],
+        { id: Date.now(), name: "New Item" },
+      ],
     }));
   };
 
   const renderItem = (item, isFirst) => {
-    const fontSize = isFirst ? 16 : 14;
-    const color = isFirst ? "black" : "#43515c";
+    /*const fontSize = isFirst ? 16 : 14;
+    const color = isFirst ? "black" : "#43515c";*/
+    console.log("item", item.name);
 
     return (
       <View style={[styles.container, { marginTop: 20 }]}>
         <TouchableOpacity onPress={() => console.log(item)}>
-          <Text style={{ fontSize, color }}>{item.name}</Text>
+          <Text
+            style={
+              {
+                /*fontSize, color*/
+              }
+            }
+          >
+            {item.name}
+          </Text>
         </TouchableOpacity>
         <View style={{ flexDirection: "row" }}>
           <FAB
@@ -72,7 +89,12 @@ export default function AgendaRoute() {
     return (
       <View style={[styles.container, { marginTop: 20 }]}>
         <Text>{"There are no tasks yet for today!"}</Text>
-        <FAB icon="plus" onPress={() => console.log("Pressed")} />
+        <FAB
+          icon="plus"
+          onPress={() => {
+            setEditMode(true);
+          }}
+        />
       </View>
     );
   };
@@ -98,6 +120,7 @@ export default function AgendaRoute() {
   };
 
   console.log("editMode", editMode);
+  console.log("items", items);
 
   const EditDialog = () => {
     const [editText, setEditText] = useState(selectedItem.name);
@@ -115,7 +138,6 @@ export default function AgendaRoute() {
           <Dialog.Actions>
             <Button
               onPress={() => {
-                setEditMode(false);
                 const unselectedItems = items[currentDate].filter(
                   (item) => item.id !== selectedItem.id
                 );
@@ -123,10 +145,13 @@ export default function AgendaRoute() {
                   ...selectedItem,
                   name: editText,
                 };
-                setItems((state) => ({
-                  ...state,
-                  [currentDate]: [...unselectedItems, editedItem],
-                }));
+                setItems((state) => {
+                  return {
+                    ...state,
+                    [currentDate]: [...unselectedItems, editedItem],
+                  };
+                });
+                setEditMode(false);
               }}
             >
               Done
@@ -150,6 +175,7 @@ export default function AgendaRoute() {
             renderEmptyDate={renderEmptyDate}
             rowHasChanged={rowHasChanged}
             showClosingKnob={true}
+            refreshing={true}
             // theme={{calendarBackground: 'red', agendaKnobColor: 'green'}}
             // renderDay={(day, item) => (<Text>{day ? day.day: 'item'}</Text>)}
             // showOnlySelectedDayItems
