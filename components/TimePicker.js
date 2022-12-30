@@ -20,7 +20,6 @@ export default TimePicker = ({}) => {
     const timeArray = dateTime.split(" ")[1].split(":");
     const time = `${timeArray[0]}:${timeArray[1]}`;
     setTimePicked(time);
-    console.log("selecetItem", selectedItem);
     hideDatePicker();
   };
 
