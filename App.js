@@ -3,7 +3,7 @@ import { StyleSheet, Text } from "react-native";
 import { BottomNavigation, Provider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import AgendaRoute from "./components/AgendaRoute";
-
+import Example from "./components/TimePicker";
 const Whiteboard = () => (
   <SafeAreaView>
     <Text>Whiteboard</Text>
@@ -41,7 +41,7 @@ const MyComponent = () => {
 
   const renderScene = BottomNavigation.SceneMap({
     agenda: AgendaRoute,
-    whiteboard: Whiteboard,
+    whiteboard: Example,
     lists: Lists,
   });
 

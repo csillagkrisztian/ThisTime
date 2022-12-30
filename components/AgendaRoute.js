@@ -10,6 +10,7 @@ import {
   Portal,
   Provider,
 } from "react-native-paper";
+import TimePicker from "./TimePicker";
 
 export default function AgendaRoute() {
   const testData = {
@@ -17,6 +18,7 @@ export default function AgendaRoute() {
       {
         id: 1576996323453,
         name: "Radagon has come",
+        date: "2022-12-25",
       },
     ],
   };
@@ -47,7 +49,7 @@ export default function AgendaRoute() {
       ...state,
       [currentDate]: [
         ...state[currentDate],
-        { id: Date.now(), name: "New Item" },
+        { id: Date.now(), name: "New Item", date: currentDate },
       ],
     }));
   };
@@ -133,6 +135,11 @@ export default function AgendaRoute() {
           }}
         >
           <Dialog.Content>
+            <TimePicker
+              selectedItem={selectedItem}
+              items={items}
+              setItems={setItems}
+            ></TimePicker>
             <TextInput value={editText} onChangeText={setEditText}></TextInput>
           </Dialog.Content>
           <Dialog.Actions>
