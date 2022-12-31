@@ -3,20 +3,11 @@ import { StyleSheet, Text } from "react-native";
 import { BottomNavigation, Provider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import AgendaRoute from "./components/AgendaRoute";
-import Example from "./components/TimePicker";
-const Whiteboard = () => (
-  <SafeAreaView>
-    <Text>Whiteboard</Text>
-  </SafeAreaView>
-);
+import TimePicker from "./components/TimePicker";
+import { store } from "./store";
+import { Provider as ReduxProvider } from "react-redux";
 
-const Lists = () => (
-  <SafeAreaView>
-    <Text>Lists</Text>
-  </SafeAreaView>
-);
-
-const MyComponent = () => {
+const App = () => {
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     {
@@ -41,24 +32,26 @@ const MyComponent = () => {
 
   const renderScene = BottomNavigation.SceneMap({
     agenda: AgendaRoute,
-    whiteboard: Example,
-    lists: Lists,
+    whiteboard: TimePicker,
+    //lists: Lists,
   });
 
   return (
-    <Provider>
-      <SafeAreaProvider>
-        <BottomNavigation
-          navigationState={{ index, routes }}
-          onIndexChange={setIndex}
-          renderScene={renderScene}
-        />
-      </SafeAreaProvider>
-    </Provider>
+    <ReduxProvider store={store}>
+      <Provider>
+        <SafeAreaProvider>
+          <BottomNavigation
+            navigationState={{ index, routes }}
+            onIndexChange={setIndex}
+            renderScene={renderScene}
+          />
+        </SafeAreaProvider>
+      </Provider>
+    </ReduxProvider>
   );
 };
 
-export default MyComponent;
+export default App;
 
 const styles = StyleSheet.create({
   container: {

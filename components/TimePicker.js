@@ -3,7 +3,7 @@ import { Button, View } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-export default TimePicker = ({}) => {
+export default TimePicker = () => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [timePicked, setTimePicked] = useState("");
 
