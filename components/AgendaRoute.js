@@ -1,87 +1,65 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { editItem, toggleEditMode } from "../store/slices/editSlice";
+import {
+  addNewItem,
+  deleteItem,
+  createEmptyItem,
+  deleteEmptyItems,
+} from "../store/slices/itemsSlice";
 import { Agenda, CalendarProvider } from "react-native-calendars";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import {
-  FAB,
-  TextInput,
-  Button,
-  Paragraph,
-  Dialog,
-  Portal,
-  Provider,
-} from "react-native-paper";
-import TimePicker from "./TimePicker";
+import { FAB } from "react-native-paper";
+import EditDialog from "./EditDialog";
+import { parseDay } from "./AgendaHelpers";
+import { changeCurrentDate } from "../store/slices/currentSlice";
 
 export default function AgendaRoute() {
-  const testData = {
-    "2022-12-25": [
-      {
-        id: 1576996323453,
-        name: "Radagon has come",
-        date: "2022-12-25",
-      },
-    ],
-  };
-  const todayString = new Date().toJSON().slice(0, 10);
-  const [items, setItems] = useState(testData);
-  const [currentDate, setCurrentDate] = useState(todayString);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedItem, setSelectedItem] = useState({});
-
+  const dispatch = useDispatch();
+  const items = useSelector(({ items }) => items);
+  const currentDate = useSelector(({ current }) => current.date);
   useEffect(() => {
-    setItems((state) => {
-      return { [todayString]: [], ...state };
-    });
+    dispatch(createEmptyItem(currentDate));
   }, []);
 
   const loadItems = (day) => {
-    const today = day.timestamp + 0 * 24 * 60 * 60 * 1000;
-    const todayString = timeToString(today);
+    const todayString = parseDay(day);
     if (!items[todayString]) {
-      setItems((state) => {
-        return { [todayString]: [], ...state };
-      });
+      dispatch(createEmptyItem(todayString));
     }
   };
 
-  const addItem = () => {
-    setItems((state) => ({
-      ...state,
-      [currentDate]: [
-        ...state[currentDate],
-        { id: Date.now(), name: "New Item", date: currentDate },
-      ],
-    }));
-  };
-
   const renderItem = (item, isFirst) => {
-    /*const fontSize = isFirst ? 16 : 14;
-    const color = isFirst ? "black" : "#43515c";*/
-    console.log("item", item.name);
-
     return (
       <View style={[styles.container, { marginTop: 20 }]}>
         <TouchableOpacity onPress={() => console.log(item)}>
-          <Text
-            style={
-              {
-                /*fontSize, color*/
-              }
-            }
-          >
-            {item.name}
-          </Text>
+          <Text>{item.name}</Text>
         </TouchableOpacity>
         <View style={{ flexDirection: "row" }}>
           <FAB
-            variant=""
+            variant="secondary"
             icon="pencil"
             onPress={() => {
-              setSelectedItem(item);
-              setEditMode(true);
+              dispatch(toggleEditMode());
+              dispatch(editItem(item));
             }}
           />
-          {isFirst && <FAB variant="" icon="plus" onPress={addItem} />}
+          <FAB
+            variant="surface"
+            icon="delete"
+            onPress={() => {
+              dispatch(deleteItem(item));
+            }}
+          />
+          {isFirst && (
+            <FAB
+              variant="secondary"
+              icon="plus"
+              onPress={() => {
+                dispatch(addNewItem(currentDate));
+              }}
+            />
+          )}
         </View>
       </View>
     );
@@ -94,7 +72,7 @@ export default function AgendaRoute() {
         <FAB
           icon="plus"
           onPress={() => {
-            setEditMode(true);
+            dispatch(toggleEditMode());
           }}
         />
       </View>
@@ -105,68 +83,12 @@ export default function AgendaRoute() {
     return r1.name !== r2.name;
   };
 
-  const timeToString = (time) => {
-    const date = new Date(time);
-    return date.toISOString().split("T")[0];
-  };
-
   const onDayPress = (day) => {
-    const savedItems = Object.entries(items).filter(
-      ([key, value]) =>
-        value.length !== 0 ||
-        (key === todayString && day.dateString === todayString)
-    );
-    setItems(Object.fromEntries(savedItems));
-    setCurrentDate(timeToString(day.timestamp + 0 * 24 * 60 * 60 * 1000));
-    loadItems(day);
-  };
-
-  console.log("editMode", editMode);
-  console.log("items", items);
-
-  const EditDialog = () => {
-    const [editText, setEditText] = useState(selectedItem.name);
-    return (
-      <Portal>
-        <Dialog
-          visible={editMode}
-          onDismiss={() => {
-            setEditMode(false);
-          }}
-        >
-          <Dialog.Content>
-            <TimePicker
-              selectedItem={selectedItem}
-              items={items}
-              setItems={setItems}
-            ></TimePicker>
-            <TextInput value={editText} onChangeText={setEditText}></TextInput>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button
-              onPress={() => {
-                const unselectedItems = items[currentDate].filter(
-                  (item) => item.id !== selectedItem.id
-                );
-                const editedItem = {
-                  ...selectedItem,
-                  name: editText,
-                };
-                setItems((state) => {
-                  return {
-                    ...state,
-                    [currentDate]: [...unselectedItems, editedItem],
-                  };
-                });
-                setEditMode(false);
-              }}
-            >
-              Done
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-    );
+    if (parseDay(day) !== currentDate) {
+      dispatch(deleteEmptyItems({ currentDate, day }));
+      dispatch(changeCurrentDate(parseDay(day)));
+      loadItems(day);
+    }
   };
 
   return (
