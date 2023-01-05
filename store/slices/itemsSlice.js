@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getFancyPhrase } from "../../helpers";
 
 const initialState = {
   "2022-12-25": [
@@ -27,19 +28,37 @@ export const itemsSlice = createSlice({
       return Object.fromEntries(filledItems);
     },
     addNewItem: (state, { payload }) => {
-      state[payload].push({ id: Date.now(), name: "New Item", date: payload });
+      state[payload].push({
+        id: Date.now(),
+        name: getFancyPhrase(),
+        date: payload,
+      });
     },
-    updateItem: (state, { payload }) => {
-      const uneditedItems = Object.values(state[payload.currentDate]).filter(
-        (item) => item.id !== payload.editedItem.id
+    deleteItem: (state, { payload }) => {
+      const { id, date } = payload;
+      state[date] = state[date].filter((item) => item.id !== id);
+    },
+    upsertItem: (state, { payload }) => {
+      const { currentDate, editedItem } = payload;
+      if (!editedItem.id) {
+        editedItem.id = Date.now();
+        editedItem.date = currentDate;
+      }
+      const uneditedItems = Object.values(state[currentDate]).filter(
+        (item) => item.id !== editedItem.id
       );
-      state[payload.currentDate] = [...uneditedItems, payload.editedItem];
+      state[currentDate] = [...uneditedItems, editedItem];
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { createEmptyItem, deleteEmptyItems, addNewItem, updateItem } =
-  itemsSlice.actions;
+export const {
+  createEmptyItem,
+  deleteEmptyItems,
+  addNewItem,
+  deleteItem,
+  upsertItem,
+} = itemsSlice.actions;
 
 export default itemsSlice.reducer;

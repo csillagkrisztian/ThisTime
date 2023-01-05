@@ -2,16 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Portal, Dialog, Button, TextInput } from "react-native-paper";
 import TimePicker from "./TimePicker";
-import { editItem, toggleEditMode } from "../store/slices/editSlice";
-import { updateItem } from "../store/slices/itemsSlice";
-
-export default EditDialog = ({ items, setItems, currentDate }) => {
+import { toggleEditMode } from "../store/slices/editSlice";
+import { upsertItem } from "../store/slices/itemsSlice";
+import { getFancyPhrase } from "../helpers";
+export default EditDialog = () => {
   const dispatch = useDispatch();
   const [editText, setEditText] = useState("");
   const { editMode, editingItem } = useSelector(({ edit }) => edit);
+  const currentDate = useSelector(({ current }) => current.date);
 
   useEffect(() => {
-    setEditText(editingItem.name);
+    if (editingItem.name) {
+      setEditText(editingItem.name);
+    } else {
+      setEditText(getFancyPhrase());
+    }
   }, [editingItem]);
 
   return (
@@ -20,6 +25,7 @@ export default EditDialog = ({ items, setItems, currentDate }) => {
         visible={editMode}
         onDismiss={() => {
           dispatch(toggleEditMode());
+          dispatch(upsertItem({ editedItem: {}, currentDate }));
         }}
       >
         <Dialog.Content>
@@ -29,20 +35,15 @@ export default EditDialog = ({ items, setItems, currentDate }) => {
         <Dialog.Actions>
           <Button
             onPress={() => {
-              //   const unselectedItems = items[currentDate].filter(
-              //     (item) => item.id !== editingItem.id
-              //   );
-              const editedItem = {
-                ...editingItem,
-                name: editText,
-              };
-              //   setItems((state) => {
-              //     return {
-              //       ...state,
-              //       [currentDate]: [...unselectedItems, editedItem],
-              //     };
-              //   });
-              dispatch(updateItem({ editedItem, currentDate }));
+              dispatch(
+                upsertItem({
+                  editedItem: {
+                    ...editingItem,
+                    name: editText,
+                  },
+                  currentDate,
+                })
+              );
               dispatch(toggleEditMode());
             }}
           >

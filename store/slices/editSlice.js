@@ -10,6 +10,7 @@ export const editSlice = createSlice({
   initialState,
   reducers: {
     toggleEditMode: (state) => {
+      state.editingItem = {};
       state.editMode = !state.editMode;
     },
     editItem: (state, { payload }) => {

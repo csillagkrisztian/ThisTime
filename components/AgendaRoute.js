@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { editItem, toggleEditMode } from "../store/slices/editSlice";
 import {
   addNewItem,
+  deleteItem,
   createEmptyItem,
   deleteEmptyItems,
 } from "../store/slices/itemsSlice";
@@ -10,19 +11,19 @@ import { Agenda, CalendarProvider } from "react-native-calendars";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { FAB } from "react-native-paper";
 import EditDialog from "./EditDialog";
+import { parseDay } from "./AgendaHelpers";
+import { changeCurrentDate } from "../store/slices/currentSlice";
 
 export default function AgendaRoute() {
-  const todayString = new Date().toJSON().slice(0, 10);
-  const items = useSelector(({ items }) => items);
-  const [currentDate, setCurrentDate] = useState(todayString);
   const dispatch = useDispatch();
+  const items = useSelector(({ items }) => items);
+  const currentDate = useSelector(({ current }) => current.date);
   useEffect(() => {
-    dispatch(createEmptyItem(todayString));
+    dispatch(createEmptyItem(currentDate));
   }, []);
 
   const loadItems = (day) => {
-    const today = day.timestamp + 0 * 24 * 60 * 60 * 1000;
-    const todayString = timeToString(today);
+    const todayString = parseDay(day);
     if (!items[todayString]) {
       dispatch(createEmptyItem(todayString));
     }
@@ -36,16 +37,23 @@ export default function AgendaRoute() {
         </TouchableOpacity>
         <View style={{ flexDirection: "row" }}>
           <FAB
-            variant=""
+            variant="secondary"
             icon="pencil"
             onPress={() => {
               dispatch(toggleEditMode());
               dispatch(editItem(item));
             }}
           />
+          <FAB
+            variant="surface"
+            icon="delete"
+            onPress={() => {
+              dispatch(deleteItem(item));
+            }}
+          />
           {isFirst && (
             <FAB
-              variant=""
+              variant="secondary"
               icon="plus"
               onPress={() => {
                 dispatch(addNewItem(currentDate));
@@ -61,7 +69,12 @@ export default function AgendaRoute() {
     return (
       <View style={[styles.container, { marginTop: 20 }]}>
         <Text>{"There are no tasks yet for today!"}</Text>
-        <FAB icon="plus" onPress={() => {}} />
+        <FAB
+          icon="plus"
+          onPress={() => {
+            dispatch(toggleEditMode());
+          }}
+        />
       </View>
     );
   };
@@ -70,22 +83,18 @@ export default function AgendaRoute() {
     return r1.name !== r2.name;
   };
 
-  const timeToString = (time) => {
-    const date = new Date(time);
-    return date.toISOString().split("T")[0];
-  };
-
   const onDayPress = (day) => {
-    dispatch(deleteEmptyItems({ todayString, day }));
-
-    setCurrentDate(timeToString(day.timestamp + 0 * 24 * 60 * 60 * 1000));
-    loadItems(day);
+    if (parseDay(day) !== currentDate) {
+      dispatch(deleteEmptyItems({ currentDate, day }));
+      dispatch(changeCurrentDate(parseDay(day)));
+      loadItems(day);
+    }
   };
 
   return (
     <>
       <View style={{ flex: 1, marginTop: 30 }}>
-        <EditDialog items={items} currentDate={currentDate}></EditDialog>
+        <EditDialog></EditDialog>
         <CalendarProvider date="">
           <Agenda
             onDayPress={onDayPress}
