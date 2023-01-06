@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getTime } from "../../components/TimePickerHelpers";
 import { getFancyPhrase } from "../../helpers";
 
 const initialState = {
-  "2022-12-25": [
+  "2023-01-08": [
     {
       id: 1576996323453,
       name: "Radagon has come",
-      date: "2022-12-25",
+      date: "2023-01-08",
+      time: "16:57",
     },
   ],
 };
@@ -32,6 +34,7 @@ export const itemsSlice = createSlice({
         id: Date.now(),
         name: getFancyPhrase(),
         date: payload,
+        time: getTime(),
       });
     },
     deleteItem: (state, { payload }) => {

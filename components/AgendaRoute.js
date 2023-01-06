@@ -9,10 +9,11 @@ import {
 } from "../store/slices/itemsSlice";
 import { Agenda, CalendarProvider } from "react-native-calendars";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import { FAB } from "react-native-paper";
+import { FAB, IconButton } from "react-native-paper";
 import EditDialog from "./EditDialog";
 import { parseDay } from "./AgendaHelpers";
 import { changeCurrentDate } from "../store/slices/currentSlice";
+import { useFonts } from "expo-font";
 
 export default function AgendaRoute() {
   const dispatch = useDispatch();
@@ -31,32 +32,53 @@ export default function AgendaRoute() {
 
   const renderItem = (item, isFirst) => {
     return (
-      <View style={[styles.container, { marginTop: 20 }]}>
-        <TouchableOpacity onPress={() => console.log(item)}>
-          <Text>{item.name}</Text>
-        </TouchableOpacity>
-        <View style={{ flexDirection: "row" }}>
-          <FAB
-            variant="secondary"
-            icon="pencil"
+      <View style={[styles.container, isFirst ? { marginTop: 24 } : {}]}>
+        <View
+          style={{
+            flexDirection: "column",
+          }}
+        >
+          <TouchableOpacity
             onPress={() => {
               dispatch(toggleEditMode());
               dispatch(editItem(item));
             }}
+          >
+            <Text style={{ color: "gray", fontSize: 14 }}>{item.time}</Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: "Hoefler Text",
+                color: "#4C4E52",
+              }}
+            >
+              {item.name}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <IconButton
+            style={{ marginTop: 17 }}
+            icon="delete"
+            size={28}
+            onPress={() => {
+              dispatch(deleteItem(item));
+            }}
           />
-          <FAB
+
+          {/* <FAB
             variant="surface"
             icon="delete"
             onPress={() => {
               dispatch(deleteItem(item));
             }}
-          />
+          /> */}
           {isFirst && (
             <FAB
               variant="secondary"
               icon="plus"
               onPress={() => {
-                dispatch(addNewItem(currentDate));
+                dispatch(addNewItem(item.date));
               }}
             />
           )}
@@ -67,8 +89,16 @@ export default function AgendaRoute() {
 
   const renderEmptyDate = (day) => {
     return (
-      <View style={[styles.container, { marginTop: 20 }]}>
-        <Text>{"There are no tasks yet for today!"}</Text>
+      <View style={[styles.container, { marginTop: 25 }]}>
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: "Hoefler Text",
+            color: "#27282a",
+          }}
+        >
+          {"There are no tasks yet for today!"}
+        </Text>
         <FAB
           icon="plus"
           onPress={() => {
