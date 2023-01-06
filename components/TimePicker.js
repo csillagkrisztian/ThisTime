@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Button, View } from "react-native";
+import { Button } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getTime } from "./TimePickerHelpers";
+import { TouchableHighlight, View } from "react-native";
 
-export default TimePicker = () => {
+export default TimePicker = ({ editTime, setEditTime }) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [timePicked, setTimePicked] = useState("");
 
   const showTimePicker = () => {
     setDatePickerVisibility(true);
@@ -16,21 +17,29 @@ export default TimePicker = () => {
   };
 
   const handleConfirm = (date) => {
-    const dateTime = new Date(date).toLocaleString("en-US", { hour12: false });
-    const timeArray = dateTime.split(" ")[1].split(":");
-    const time = `${timeArray[0]}:${timeArray[1]}`;
-    setTimePicked(time);
+    const time = getTime(date);
+    setEditTime(time);
     hideDatePicker();
   };
 
   return (
     <SafeAreaView>
-      {timePicked ? (
-        <Button title={timePicked} onPress={showTimePicker}></Button>
-      ) : (
-        <Button title="Show Date Picker" onPress={showTimePicker} />
-      )}
-
+      <TouchableHighlight onPress={showTimePicker}>
+        <View
+          style={{
+            borderRadius: 5,
+          }}
+        >
+          <Button
+            labelStyle={{ fontSize: 21 }}
+            contentStyle={{ height: 80, padding: 0, margin: 0 }}
+            mode="contained"
+            onPress={showTimePicker}
+          >
+            {editTime}
+          </Button>
+        </View>
+      </TouchableHighlight>
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="time"

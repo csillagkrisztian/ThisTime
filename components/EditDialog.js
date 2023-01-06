@@ -5,9 +5,12 @@ import TimePicker from "./TimePicker";
 import { toggleEditMode } from "../store/slices/editSlice";
 import { upsertItem } from "../store/slices/itemsSlice";
 import { getFancyPhrase } from "../helpers";
+import { getTime } from "./TimePickerHelpers";
+
 export default EditDialog = () => {
   const dispatch = useDispatch();
   const [editText, setEditText] = useState("");
+  const [editTime, setEditTime] = useState(getTime());
   const { editMode, editingItem } = useSelector(({ edit }) => edit);
   const currentDate = useSelector(({ current }) => current.date);
 
@@ -19,18 +22,24 @@ export default EditDialog = () => {
     }
   }, [editingItem]);
 
+  console.log("editT", editTime);
+
   return (
     <Portal>
       <Dialog
         visible={editMode}
         onDismiss={() => {
           dispatch(toggleEditMode());
-          dispatch(upsertItem({ editedItem: {}, currentDate }));
         }}
       >
         <Dialog.Content>
-          <TimePicker />
-          <TextInput value={editText} onChangeText={setEditText}></TextInput>
+          <TimePicker editTime={editTime} setEditTime={setEditTime} />
+          <TextInput
+            label={"Item Name"}
+            placeholder={"Write whatever you wanna do!"}
+            value={editText}
+            onChangeText={setEditText}
+          ></TextInput>
         </Dialog.Content>
         <Dialog.Actions>
           <Button
@@ -40,6 +49,7 @@ export default EditDialog = () => {
                   editedItem: {
                     ...editingItem,
                     name: editText,
+                    time: editTime,
                   },
                   currentDate,
                 })
